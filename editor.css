@@ -1,0 +1,18 @@
+/* Import base styles */
+@import url('./style.css');
+
+/* Hide resize handles on images in lightbox gallery (allowResize context is false) */
+.wp-block-lightbox-gallery-gallery .wp-block-image .components-resizable-box__handle {
+	display: none !important;
+}
+
+.wp-block-lightbox-gallery-gallery .wp-block-image .components-resizable-box__container {
+	display: block;
+}
+
+/* Ensure images don't show resize controls when dragging */
+.wp-block-lightbox-gallery-gallery .wp-block-image.is-dragging .components-resizable-box__handle,
+.wp-block-lightbox-gallery-gallery .wp-block-image.is-selected .components-resizable-box__handle {
+	display: none !important;
+}
+

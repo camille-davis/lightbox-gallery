@@ -1,0 +1,46 @@
+/* Lightbox Gallery - Square Grid Layout */
+.wp-block-lightbox-gallery-gallery {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--wp--style--unstable-gallery-gap, 0.5em);
+}
+
+.wp-block-lightbox-gallery-gallery .wp-block-image {
+	flex: 1;
+	min-width: 0;
+	aspect-ratio: 1 / 1;
+	overflow: hidden;
+	height: 100%;
+}
+
+.wp-block-lightbox-gallery-gallery .wp-block-image > div {
+	height: 100%;
+}
+
+.wp-block-lightbox-gallery-gallery .wp-block-image figure {
+	margin: 0;
+	width: 100%;
+	height: 100%;
+	display: block;
+	position: relative;
+	overflow: hidden;
+}
+
+.wp-block-lightbox-gallery-gallery .wp-block-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	display: block;
+	min-width: 100%;
+	min-height: 100%;
+}
+
+/* Responsive: 1 column on very small screens */
+@media (max-width: 480px) {
+	.wp-block-lightbox-gallery-gallery .wp-block-image {
+		flex: 1;
+		min-width: 100%;
+	}
+}
+
