@@ -40,7 +40,8 @@
 			"allowVerticalAlignment": false,
 			"allowOrientation": false,
 			"default": {
-				"type": "flex"
+				"type": "flex",
+				"orientation": "horizontal"
 			}
 		}
 	},

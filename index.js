@@ -25,10 +25,30 @@
 
 		// Adds block functionality when block is rendered in editor.
 		edit: function Edit(props) {
-			const { clientId } = props;
+			const { clientId, attributes, setAttributes } = props;
 			const { replaceInnerBlocks } = useDispatch('core/block-editor');
+			const blockProps = useBlockProps();
+			const innerBlocksProps = useInnerBlocksProps(blockProps)
 
-			// Replaces gallery contents with images from media library.
+			// Get image blocks.
+			const imageBlocks = useSelect(function (select) {
+				return select('core/block-editor').getBlocks(clientId);
+			}, [clientId]);
+			const hasImages = imageBlocks && imageBlocks.length > 0;
+
+			// Set layout attribute (to enable native drag and drop).
+			useEffect(function () {
+				if (!attributes.layout) {
+					setAttributes({
+						layout: {
+							type: 'flex',
+							orientation: 'horizontal',
+						},
+					});
+				}
+			}, [attributes.layout]);
+
+			// Handle media selection from Media Library
 			const replaceImages = function (images) {
 				if (!images || images.length === 0) {
 					return;
@@ -42,16 +62,6 @@
 				});
 				replaceInnerBlocks(clientId, imageBlocksToInsert, false);
 			};
-
-			// Get existing image blocks.
-			const imageBlocks = useSelect(function (select) {
-				return select('core/block-editor').getBlocks(clientId);
-			}, [clientId]);
-			const hasImages = imageBlocks && imageBlocks.length > 0;
-
-			// Get block props.
-			const blockProps = useBlockProps();
-			const innerBlocksProps = useInnerBlocksProps(blockProps);
 
 			// If gallery has no images, show a placeholder with "Choose Images" button.
 			if (!hasImages) {
@@ -126,9 +136,10 @@
 			);
 		},
 
-		// Runs when saving the page.
+		// Saves block markup to database on page save.
 		save: function Save() {
 			const blockProps = useBlockProps.save();
+
 			return createElement(
 				'figure',
 				blockProps,
