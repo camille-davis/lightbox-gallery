@@ -44,7 +44,6 @@
 			}
 		}
 	},
-	"editorStyle": "file:./editor.css",
 	"style": "file:./style.css"
 }
 

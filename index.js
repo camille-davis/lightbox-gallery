@@ -1,25 +1,17 @@
 (function () {
-
-	// Import block registration functionality.
 	const { registerBlockType } = wp.blocks;
-
-	// Import WP and block editor components and hooks.
 	const { useBlockProps, InnerBlocks, MediaUpload, MediaUploadCheck, BlockControls, useInnerBlocksProps } = wp.blockEditor;
 	const { Button, Placeholder, ToolbarButton } = wp.components;
-
-	// Import React utilities.
-	const { createElement, Fragment } = wp.element;
-
-	// Import translation function.
+	const { createElement, Fragment, useEffect } = wp.element;
 	const { __ } = wp.i18n;
-
-	// Import WP data store functions and hooks.
-	const { useSelect, useDispatch, subscribe, select } = wp.data;
-
-	// Import WP SVG components.
+	const { useSelect, useDispatch } = wp.data;
 	const { SVG, Path } = wp.primitives;
 
-	// Use gallery icon from WP icons library.
+	// -------------------------------------
+	// Lightbox Gallery block functionality.
+	// -------------------------------------
+
+	// Gallery icon from WP icons library.
 	const galleryIcon = createElement(SVG, {
 		viewBox: '0 0 24 24',
 		xmlns: 'http://www.w3.org/2000/svg',
@@ -28,11 +20,10 @@
 		fillRule: 'evenodd',
 	}));
 
-	// Register the Lightbox Gallery block type.
 	registerBlockType('lightbox-gallery/gallery', {
 		icon: galleryIcon,
 
-		// Edit - runs when block is rendered in editor and received props from WP.
+		// Adds block functionality when block is rendered in editor.
 		edit: function Edit(props) {
 			const { clientId } = props;
 			const { replaceInnerBlocks } = useDispatch('core/block-editor');
@@ -42,8 +33,6 @@
 				if (!images || images.length === 0) {
 					return;
 				}
-
-				// Convert images to blocks.
 				const imageBlocksToInsert = images.map(function (image) {
 					return wp.blocks.createBlock('core/image', {
 						id: image.id,
@@ -51,20 +40,18 @@
 						alt: image.alt || ''
 					});
 				});
-
-				// Insert images.
 				replaceInnerBlocks(clientId, imageBlocksToInsert, false);
 			};
-
-			// Get block props.
-			const blockProps = useBlockProps();
-			const innerBlocksProps = useInnerBlocksProps(blockProps);
 
 			// Get existing image blocks.
 			const imageBlocks = useSelect(function (select) {
 				return select('core/block-editor').getBlocks(clientId);
 			}, [clientId]);
 			const hasImages = imageBlocks && imageBlocks.length > 0;
+
+			// Get block props.
+			const blockProps = useBlockProps();
+			const innerBlocksProps = useInnerBlocksProps(blockProps);
 
 			// If gallery has no images, show a placeholder with "Choose Images" button.
 			if (!hasImages) {
@@ -101,7 +88,7 @@
 				);
 			}
 
-			// Render gallery with images.
+			// Otherwise render gallery with images.
 			return createElement(
 				Fragment,
 				null,
@@ -139,7 +126,7 @@
 			);
 		},
 
-		// Save - runs when WP saves the page.
+		// Runs when saving the page.
 		save: function Save() {
 			const blockProps = useBlockProps.save();
 			return createElement(
@@ -150,70 +137,91 @@
 		},
 	});
 
-		// Track the previously selected block.
-		let previousSelectedBlockClientId = null;
+	// ------------------------------------------------
+	// Functions to hide gallery image toolbar options.
+	// ------------------------------------------------
 
-		// Function to hide the duotone toolbar button
-		function hideDuotoneToolbarGroup() {
-			// Find the duotone button in the block toolbar
-			// Uses aria-label to find it (WordPress adds this for accessibility)
-			const duotoneButton = document.querySelector('.block-editor-block-toolbar button[aria-label="Apply duotone filter"]');
-
-			if (duotoneButton) {
-				// Find the parent toolbar group that contains this button
-				// closest() traverses up the DOM tree to find matching ancestor
-				const toolbarGroup = duotoneButton.closest('.components-toolbar-group');
-				if (toolbarGroup) {
-					// Hide the entire toolbar group (not just the button)
-					toolbarGroup.style.display = 'none';
-				}
-			}
-		}
-
-		// Subscribe to WordPress block editor store changes
-		// This callback runs whenever the store state changes (e.g., block selection)
-		subscribe(function () {
-			// Get the block editor store
-			const blockEditor = select('core/block-editor');
-
-			// Get the currently selected block (null if nothing selected)
-			const selectedBlock = blockEditor.getSelectedBlock();
-
-			// Skip if no block selected or same block as before (avoid unnecessary work)
-			if (!selectedBlock || selectedBlock.clientId === previousSelectedBlockClientId) {
-				// If nothing selected, reset the tracking variable
-				if (!selectedBlock) {
-					previousSelectedBlockClientId = null;
-				}
-				return; // Exit early
+	// Hides toolbar options when gallery image blocks are selected.
+	const galleryBlockObserver = new MutationObserver(function (mutations) {
+		mutations.forEach(function (mutation) {
+			const target = mutation.target;
+			if (!target.matches('.wp-block-image.is-selected')) {
+				return;
 			}
 
-			// Update tracking variable to current selection
-			previousSelectedBlockClientId = selectedBlock.clientId;
-
-			// Only hide duotone if the selected block is an image block
-			if (selectedBlock.name === 'core/image') {
-				// Get all parent block IDs (walking up the block tree)
-				// true = include all ancestors, not just immediate parent
-				const parentIds = blockEditor.getBlockParents(selectedBlock.clientId, true);
-
-				// Check if any parent is a lightbox gallery block
-				const isInLightboxGallery = parentIds.some(function (parentId) {
-					// Get the parent block object
-					const parentBlock = blockEditor.getBlock(parentId);
-					// Check if parent is our lightbox gallery block
-					return parentBlock && parentBlock.name === 'lightbox-gallery/gallery';
-				});
-
-				// If image is inside a lightbox gallery, hide the duotone button
-				if (isInLightboxGallery) {
-					// Hide immediately
-					hideDuotoneToolbarGroup();
-					// Also hide on next frame (WordPress might re-render toolbar)
-					// requestAnimationFrame runs after browser repaint
-					requestAnimationFrame(hideDuotoneToolbarGroup);
-				}
+			// Hide toolbar group containing 'Align' button.
+			const alignButton = document.querySelector('.block-editor-block-toolbar button[aria-label="Align"]');
+			const toolbarGroup = alignButton && alignButton.closest('.components-toolbar-group');
+			if (toolbarGroup) {
+				toolbarGroup.style.display = 'none';
 			}
 		});
+	});
+
+	// Observes a single gallery block for class changes.
+	function observeGalleryBlock(galleryBlock) {
+		galleryBlockObserver.observe(galleryBlock, {
+			attributes: true,
+			attributeFilter: ['class'],
+			subtree: true
+		});
+	}
+
+	// Watches for new gallery blocks and applies observer.
+	const editorObserver = new MutationObserver(function (mutations) {
+		mutations.forEach(function (mutation) {
+			if (mutation.type !== 'childList') {
+				return;
+			}
+			mutation.addedNodes.forEach(function (node) {
+
+				// Only process element nodes.
+				if (node.nodeType !== 1) return;
+
+				// Check if added node is a gallery block
+				if (node.matches('[data-type="lightbox-gallery/gallery"]')) {
+					observeGalleryBlock(node);
+					return;
+				}
+
+				// Otherwise check for gallery blocks within added node.
+				const galleryBlocks = node.querySelectorAll('[data-type="lightbox-gallery/gallery"]');
+				galleryBlocks.forEach(observeGalleryBlock);
+			});
+		});
+	});
+
+	// Waits for appearance of editor iframe and applies editor observer.
+	let retryCount = 0;
+	function addIframeEventListener() {
+
+		// Wait for iframe to appear.
+		const iframe = document.querySelector('iframe[name="editor-canvas"]');
+		if (!iframe) {
+			if (retryCount < 50) {
+				retryCount++;
+				setTimeout(addIframeEventListener, 100);
+			}
+			return;
+		}
+
+		// Add observers on iframe load.
+		iframe.addEventListener('load', () => {
+			const iframeDocument = iframe.contentDocument;
+			const editorContent = iframeDocument.querySelector('.block-editor-block-list__layout');
+
+			// Observe editor for new gallery blocks.
+			editorObserver.observe(editorContent, {
+				childList: true,
+				subtree: true
+			});
+
+			// Observe existing gallery blocks.
+			iframeDocument.querySelectorAll('[data-type="lightbox-gallery/gallery"]').forEach(observeGalleryBlock);
+		});
+	}
+
+	// Start observing when DOM is ready
+	document.addEventListener('DOMContentLoaded', addIframeEventListener);
 })();
 
