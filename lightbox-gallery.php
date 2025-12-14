@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: Lightbox Gallery
- * Plugin URI: https://github.com/yourusername/lightbox-gallery
- * Description: A simplified Gallery block for WordPress with lightbox functionality (coming soon).
+ * Plugin URI: https://github.com/camilledavis/lightbox-gallery
+ * Description: A simple Gallery block with a lightbox and left-right navigation.
  * Version: 1.0.0
- * Author: Your Name
+ * Author: Camille Davis
  * License: GPL-2.0-or-later
  * Text Domain: lightbox-gallery
  *
@@ -23,30 +23,31 @@ require_once __DIR__ . '/render.php';
  * Enqueue block editor assets.
  */
 function lightbox_gallery_enqueue_editor_assets() {
-	$script_path = plugin_dir_path( __FILE__ ) . 'index.js';
-	$script_url  = plugin_dir_url( __FILE__ ) . 'index.js';
-
 	wp_enqueue_script(
 		'lightbox-gallery-gallery-editor',
-		$script_url,
-		array(
-			'wp-blocks',
-			'wp-block-editor',
-			'wp-components',
-			'wp-element',
-			'wp-i18n',
-			'wp-data',
-		),
-		file_exists( $script_path ) ? filemtime( $script_path ) : '1.0.0',
+		plugin_dir_url( __FILE__ ) . 'index.js',
+		array( 'wp-blocks', 'wp-block-editor', 'wp-components', 'wp-element', 'wp-i18n', 'wp-data' ),
+		'1.0.0',
 		true
 	);
 }
 add_action( 'enqueue_block_editor_assets', 'lightbox_gallery_enqueue_editor_assets' );
 
 /**
- * Registers the block using the metadata loaded from the `block.json` file.
- * Behind the scenes, it registers also all assets so they can be enqueued
- * through the block editor in the corresponding context.
+ * In dev, remove version from lightbox gallery script.
+ *
+ * @param string $src The source URL.
+ */
+function lightbox_gallery_remove_version_script( $src ) {
+	if ( defined( 'WP_DEBUG' ) && WP_DEBUG && strpos( $src, 'lightbox-gallery/index.js' ) !== false && strpos( $src, 'ver=' ) ) {
+		$src = remove_query_arg( 'ver', $src );
+	}
+	return $src;
+}
+add_filter( 'script_loader_src', 'lightbox_gallery_remove_version_script', 9999 );
+
+/**
+ * Registers the block using config from `block.json`.
  */
 function lightbox_gallery_register_block() {
 	register_block_type(
@@ -57,4 +58,3 @@ function lightbox_gallery_register_block() {
 	);
 }
 add_action( 'init', 'lightbox_gallery_register_block' );
-

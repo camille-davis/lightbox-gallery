@@ -10,9 +10,8 @@
 	display: block;
 }
 
-/* Ensure images don't show resize controls when dragging */
-.wp-block-lightbox-gallery-gallery .wp-block-image.is-dragging .components-resizable-box__handle,
-.wp-block-lightbox-gallery-gallery .wp-block-image.is-selected .components-resizable-box__handle {
-	display: none !important;
+/* Make InnerBlocks container full width */
+.wp-block-lightbox-gallery-gallery .block-editor-inner-blocks {
+	width: 100%;
 }
 

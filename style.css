@@ -1,16 +1,14 @@
-/* Lightbox Gallery - Square Grid Layout */
-.wp-block-lightbox-gallery-gallery {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--wp--style--unstable-gallery-gap, 0.5em);
-}
+/* Lightbox Gallery - Flex Layout */
 
+/* Target image blocks via container class selector (WordPress generates wp-container-lightbox-gallery-gallery-is-layout-[NUMBER]) */
+[class*="wp-container-lightbox-gallery-gallery-is-layout-"] > .wp-block-image,
 .wp-block-lightbox-gallery-gallery .wp-block-image {
-	flex: 1;
-	min-width: 0;
 	aspect-ratio: 1 / 1;
 	overflow: hidden;
-	height: 100%;
+	flex-grow: 0;
+	flex-shrink: 1;
+	flex-basis: calc(25% - var(--wp--style--block-gap, 0.5em) * 0.75);
+	min-width: 0;
 }
 
 .wp-block-lightbox-gallery-gallery .wp-block-image > div {
@@ -36,11 +34,22 @@
 	min-height: 100%;
 }
 
+/* Responsive: 2 columns on tablets */
+@media (max-width: 768px) {
+	[class*="wp-container-lightbox-gallery-gallery-is-layout-"] > .wp-block-image,
+	.wp-block-lightbox-gallery-gallery .wp-block-image {
+		flex-grow: 0;
+		flex-shrink: 1;
+		flex-basis: calc(50% - var(--wp--style--block-gap, 0.5em) * 0.5);
+	}
+}
+
 /* Responsive: 1 column on very small screens */
 @media (max-width: 480px) {
 	.wp-block-lightbox-gallery-gallery .wp-block-image {
-		flex: 1;
-		min-width: 100%;
+		flex-grow: 0;
+		flex-shrink: 1;
+		flex-basis: 100%;
 	}
 }
 
