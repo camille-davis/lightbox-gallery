@@ -57,7 +57,8 @@
 					return wp.blocks.createBlock('core/image', {
 						id: image.id,
 						url: image.url,
-						alt: image.alt || ''
+						alt: image.alt || '',
+						href: image.url
 					});
 				});
 				replaceInnerBlocks(clientId, imageBlocksToInsert, false);

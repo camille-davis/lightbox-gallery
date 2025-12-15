@@ -12,6 +12,11 @@
 	height: 100%;
 }
 
+.wp-block-lightbox-gallery-gallery .wp-block-image a {
+	width: 100%;
+	height: 100%;
+}
+
 .wp-block-lightbox-gallery-gallery .wp-block-image img {
 	width: 100%;
 	height: 100%;
