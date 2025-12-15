@@ -30,12 +30,6 @@
 			const blockProps = useBlockProps();
 			const innerBlocksProps = useInnerBlocksProps(blockProps)
 
-			// Get image blocks.
-			const imageBlocks = useSelect(function (select) {
-				return select('core/block-editor').getBlocks(clientId);
-			}, [clientId]);
-			const hasImages = imageBlocks && imageBlocks.length > 0;
-
 			// Set layout attribute (to enable native drag and drop).
 			useEffect(function () {
 				if (!attributes.layout) {
@@ -48,7 +42,13 @@
 				}
 			}, [attributes.layout]);
 
-			// Handle media selection from Media Library
+			// Get image blocks.
+			const imageBlocks = useSelect(function (select) {
+				return select('core/block-editor').getBlocks(clientId);
+			}, [clientId]);
+			const hasImages = imageBlocks && imageBlocks.length > 0;
+
+			// Handle media selection from Media Library.
 			const replaceImages = function (images) {
 				if (!images || images.length === 0) {
 					return;
@@ -161,7 +161,7 @@
 			}
 
 			// Hide toolbar group containing 'Align' button.
-			const alignButton = document.querySelector('.block-editor-block-toolbar button[aria-label="Align"]');
+			const alignButton = document.querySelector('.block-editor-block-toolbar button[aria-label="Link"]');
 			const toolbarGroup = alignButton && alignButton.closest('.components-toolbar-group');
 			if (toolbarGroup) {
 				toolbarGroup.style.display = 'none';
