@@ -53,18 +53,27 @@
 				if (!images || images.length === 0) {
 					return;
 				}
+
 				const imageBlocksToInsert = images.map(function (image) {
+
+					// Remove Gutenberg alt anti-pattern.
+					let alt = image.alt;
+					if (typeof alt === 'string' && alt.indexOf('This image has an empty alt attribute') === 0) {
+						alt = '';
+					}
+
 					return wp.blocks.createBlock('core/image', {
 						id: image.id,
 						url: image.url,
-						alt: image.alt || '',
-						href: image.url
+						alt: 'View image: ' + image.alt,
+						href: image.url,
+						caption: image.caption
 					});
 				});
 				replaceInnerBlocks(clientId, imageBlocksToInsert, false);
 			};
 
-			// If gallery has no images, show a placeholder with "Choose Images" button.
+			// If gallery has no images, show a placeholder.
 			if (!hasImages) {
 				return createElement(
 					'div',
@@ -73,7 +82,8 @@
 						Placeholder,
 						{
 							icon: galleryIcon,
-							label: __('Lightbox Gallery')
+							label: __('Lightbox Gallery'),
+							instructions: __('Add images to your gallery. Note: lightbox functionality is disabled in editor.')
 						},
 						createElement(
 							MediaUploadCheck,

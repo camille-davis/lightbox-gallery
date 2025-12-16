@@ -19,9 +19,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Load the render callback.
 require_once __DIR__ . '/render.php';
 
-/**
- * Enqueue block editor assets.
- */
+// Register the block using config from `block.json`.
+function lightbox_gallery_register_block() {
+	register_block_type( __DIR__, array( 'render_callback' => 'lightbox_gallery_render' ) );
+}
+add_action( 'init', 'lightbox_gallery_register_block' );
+
+// Enqueue lightbox script.
+function lightbox_gallery_enqueue_view_script() {
+	wp_enqueue_script(
+		'lightbox-gallery-gallery-view',
+		plugin_dir_url( __FILE__ ) . 'lightbox.js',
+		array( 'jquery' ),
+		'1.0.0',
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'lightbox_gallery_enqueue_view_script' );
+
+// Enqueue editor script.
 function lightbox_gallery_enqueue_editor_assets() {
 	wp_enqueue_script(
 		'lightbox-gallery-gallery-editor',
@@ -33,28 +49,11 @@ function lightbox_gallery_enqueue_editor_assets() {
 }
 add_action( 'enqueue_block_editor_assets', 'lightbox_gallery_enqueue_editor_assets' );
 
-/**
- * In dev, remove version from lightbox gallery script.
- *
- * @param string $src The source URL.
- */
+// Remove script version in dev.
 function lightbox_gallery_remove_version_script( $src ) {
-	if ( defined( 'WP_DEBUG' ) && WP_DEBUG && strpos( $src, 'lightbox-gallery/index.js' ) !== false && strpos( $src, 'ver=' ) ) {
+	if ( defined( 'WP_DEBUG' ) && WP_DEBUG && strpos( $src, 'lightbox-gallery' ) !== false && strpos( $src, 'ver=' ) !== false ) {
 		$src = remove_query_arg( 'ver', $src );
 	}
 	return $src;
 }
 add_filter( 'script_loader_src', 'lightbox_gallery_remove_version_script', 9999 );
-
-/**
- * Registers the block using config from `block.json`.
- */
-function lightbox_gallery_register_block() {
-	register_block_type(
-		__DIR__,
-		array(
-			'render_callback' => 'lightbox_gallery_render',
-		)
-	);
-}
-add_action( 'init', 'lightbox_gallery_register_block' );
